@@ -161,7 +161,7 @@ impl ChatAgent {
         use futures::StreamExt;
         use modular_agent_core::tool::list_tool_infos_patterns;
 
-        let client = self.openai_manager.get_client(self.ma(), Self::DEF_NAME)?;
+        let client = self.openai_manager.get_client(self.ma())?;
 
         let options_json =
             if !config_options.is_empty() {
@@ -315,7 +315,7 @@ impl ChatAgent {
         use ollama_rs::models::ModelOptions;
         use tokio_stream::StreamExt;
 
-        let client = self.ollama_manager.get_client(self.ma(), Self::DEF_NAME)?;
+        let client = self.ollama_manager.get_client(self.ma())?;
 
         let options_json = if !config_options.is_empty() {
             let value = serde_json::to_value(&config_options).map_err(|e| {

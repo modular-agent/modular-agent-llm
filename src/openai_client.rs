@@ -21,6 +21,8 @@ use modular_agent_core::{
     AgentError, AgentValue, AgentValueMap, Message, ModularAgent, ToolCall, ToolCallFunction,
 };
 
+use crate::chat::ChatAgent;
+
 const CONFIG_OPENAI_API_KEY: &str = "openai_api_key";
 const CONFIG_OPENAI_API_BASE: &str = "openai_api_base";
 
@@ -36,11 +38,7 @@ impl OpenAIManager {
         }
     }
 
-    pub fn get_client(
-        &self,
-        ma: &ModularAgent,
-        def_name: &str,
-    ) -> Result<Client<OpenAIConfig>, AgentError> {
+    pub fn get_client(&self, ma: &ModularAgent) -> Result<Client<OpenAIConfig>, AgentError> {
         let mut client_guard = self.client.lock().unwrap();
 
         if let Some(client) = client_guard.as_ref() {
@@ -50,7 +48,7 @@ impl OpenAIManager {
         let mut config = OpenAIConfig::new();
 
         if let Some(api_key) = ma
-            .get_global_configs(def_name)
+            .get_global_configs(ChatAgent::DEF_NAME)
             .and_then(|cfg| cfg.get_string(CONFIG_OPENAI_API_KEY).ok())
             .filter(|key| !key.is_empty())
         {
@@ -58,7 +56,7 @@ impl OpenAIManager {
         }
 
         if let Some(api_base) = ma
-            .get_global_configs(def_name)
+            .get_global_configs(ChatAgent::DEF_NAME)
             .and_then(|cfg| cfg.get_string(CONFIG_OPENAI_API_BASE).ok())
             .filter(|key| !key.is_empty())
         {

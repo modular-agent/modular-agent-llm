@@ -3,9 +3,9 @@
 use std::sync::{Arc, Mutex};
 
 use modular_agent_core::tool;
-use modular_agent_core::{
-    AgentConfigs, AgentError, Message, ModularAgent, ToolCall, ToolCallFunction,
-};
+use modular_agent_core::{AgentError, Message, ModularAgent, ToolCall, ToolCallFunction};
+
+use crate::chat::ChatAgent;
 
 use im::vector;
 pub use ollama_rs::generation::completion::GenerationContext;
@@ -36,13 +36,13 @@ impl OllamaManager {
         }
     }
 
-    pub fn get_ollama_url(global_config: Option<AgentConfigs>) -> String {
-        if let Some(ollama_url) =
-            global_config.and_then(|cfg| cfg.get_string(CONFIG_OLLAMA_URL).ok())
+    pub fn get_ollama_url(ma: &ModularAgent) -> String {
+        if let Some(ollama_url) = ma
+            .get_global_configs(ChatAgent::DEF_NAME)
+            .and_then(|cfg| cfg.get_string(CONFIG_OLLAMA_URL).ok())
+            .filter(|url| !url.is_empty())
         {
-            if !ollama_url.is_empty() {
-                return ollama_url;
-            }
+            return ollama_url;
         }
         if let Ok(ollama_api_base_url) = std::env::var("OLLAMA_API_BASE_URL") {
             return ollama_api_base_url;
@@ -52,15 +52,14 @@ impl OllamaManager {
         DEFAULT_OLLAMA_URL.to_string()
     }
 
-    pub fn get_client(&self, ma: &ModularAgent, def_name: &str) -> Result<Ollama, AgentError> {
+    pub fn get_client(&self, ma: &ModularAgent) -> Result<Ollama, AgentError> {
         let mut client_guard = self.client.lock().unwrap();
 
         if let Some(client) = client_guard.as_ref() {
             return Ok(client.clone());
         }
 
-        let global_config = ma.get_global_configs(def_name);
-        let api_base_url = Self::get_ollama_url(global_config);
+        let api_base_url = Self::get_ollama_url(ma);
         let new_client = Ollama::try_new(api_base_url)
             .map_err(|e| AgentError::IoError(format!("Ollama Client Error: {}", e)))?;
         *client_guard = Some(new_client.clone());

@@ -22,14 +22,9 @@ const PORT_EMBEDDINGS: &str = "embeddings";
 const PORT_STRING: &str = "string";
 
 const CONFIG_MODEL: &str = "model";
-const CONFIG_OPENAI_API_KEY: &str = "openai_api_key";
-const CONFIG_OPENAI_API_BASE: &str = "openai_api_base";
-const CONFIG_OLLAMA_URL: &str = "ollama_url";
 const CONFIG_OPTIONS: &str = "options";
 
 const DEFAULT_CONFIG_MODEL: &str = "text-embedding-3-small";
-const DEFAULT_OPENAI_API_BASE: &str = "https://api.openai.com/v1";
-const DEFAULT_OLLAMA_URL: &str = "http://localhost:11434";
 
 /// Unified Embeddings Agent that routes to different LLM providers based on model prefix.
 ///
@@ -49,9 +44,6 @@ const DEFAULT_OLLAMA_URL: &str = "http://localhost:11434";
     outputs = [PORT_EMBEDDING, PORT_EMBEDDINGS, PORT_DOC],
     string_config(name = CONFIG_MODEL, default = DEFAULT_CONFIG_MODEL),
     object_config(name = CONFIG_OPTIONS),
-    string_global_config(name = CONFIG_OPENAI_API_KEY, title = "OpenAI API Key"),
-    string_global_config(name = CONFIG_OPENAI_API_BASE, title = "OpenAI API Base URL", default = DEFAULT_OPENAI_API_BASE),
-    string_global_config(name = CONFIG_OLLAMA_URL, title = "Ollama URL", default = DEFAULT_OLLAMA_URL),
 )]
 pub struct EmbeddingsAgent {
     data: AgentData,
@@ -121,7 +113,7 @@ impl EmbeddingsAgent {
         model_name: &str,
         config_options: AgentValueMap<String, AgentValue>,
     ) -> Result<(), AgentError> {
-        let client = self.openai_manager.get_client(self.ma(), Self::DEF_NAME)?;
+        let client = self.openai_manager.get_client(self.ma())?;
 
         if port == PORT_STRING {
             let text = value.as_str().unwrap_or_default();
@@ -206,7 +198,7 @@ impl EmbeddingsAgent {
         model_name: &str,
         config_options: AgentValueMap<String, AgentValue>,
     ) -> Result<(), AgentError> {
-        let client = self.ollama_manager.get_client(self.ma(), Self::DEF_NAME)?;
+        let client = self.ollama_manager.get_client(self.ma())?;
 
         let model_options = Self::parse_ollama_options(&config_options)?;
 

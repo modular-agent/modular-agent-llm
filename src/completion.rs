@@ -19,16 +19,11 @@ const PORT_RESET: &str = "reset";
 const PORT_RESPONSE: &str = "response";
 
 const CONFIG_MODEL: &str = "model";
-const CONFIG_OPENAI_API_KEY: &str = "openai_api_key";
-const CONFIG_OPENAI_API_BASE: &str = "openai_api_base";
-const CONFIG_OLLAMA_URL: &str = "ollama_url";
 const CONFIG_OPTIONS: &str = "options";
 const CONFIG_SYSTEM: &str = "system";
 const CONFIG_USE_CONTEXT: &str = "use_context";
 
 const DEFAULT_CONFIG_MODEL: &str = "gpt-3.5-turbo-instruct";
-const DEFAULT_OPENAI_API_BASE: &str = "https://api.openai.com/v1";
-const DEFAULT_OLLAMA_URL: &str = "http://localhost:11434";
 
 /// Unified Completion Agent that routes to different LLM providers based on model prefix.
 ///
@@ -48,9 +43,6 @@ const DEFAULT_OLLAMA_URL: &str = "http://localhost:11434";
     text_config(name = CONFIG_SYSTEM, default = ""),
     boolean_config(name = CONFIG_USE_CONTEXT, title = "Use Context (Ollama only)"),
     object_config(name = CONFIG_OPTIONS),
-    string_global_config(name = CONFIG_OPENAI_API_KEY, title = "OpenAI API Key"),
-    string_global_config(name = CONFIG_OPENAI_API_BASE, title = "OpenAI API Base URL", default = DEFAULT_OPENAI_API_BASE),
-    string_global_config(name = CONFIG_OLLAMA_URL, title = "Ollama URL", default = DEFAULT_OLLAMA_URL),
 )]
 pub struct CompletionAgent {
     data: AgentData,
@@ -162,7 +154,7 @@ impl CompletionAgent {
     ) -> Result<(), AgentError> {
         use async_openai::types::{CreateCompletionRequest, CreateCompletionRequestArgs};
 
-        let client = self.openai_manager.get_client(self.ma(), Self::DEF_NAME)?;
+        let client = self.openai_manager.get_client(self.ma())?;
 
         // Build the prompt with system message if provided
         let full_prompt = if !config_system.is_empty() {
@@ -224,7 +216,7 @@ impl CompletionAgent {
         use ollama_rs::generation::completion::request::GenerationRequest;
         use ollama_rs::models::ModelOptions;
 
-        let client = self.ollama_manager.get_client(self.ma(), Self::DEF_NAME)?;
+        let client = self.ollama_manager.get_client(self.ma())?;
 
         let use_context = self.configs()?.get_bool_or_default(CONFIG_USE_CONTEXT);
 

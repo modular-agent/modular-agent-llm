@@ -21,16 +21,12 @@ const PORT_MODEL_LIST: &str = "model_list";
 const PORT_MODEL_NAME: &str = "model_name";
 const PORT_UNIT: &str = "unit";
 
-const CONFIG_OLLAMA_URL: &str = "ollama_url";
-const DEFAULT_OLLAMA_URL: &str = "http://localhost:11434";
-
 // Ollama List Local Models
 #[modular_agent(
     title="List Local Models",
     category=CATEGORY,
     inputs=[PORT_UNIT],
     outputs=[PORT_MODEL_LIST],
-    string_global_config(name=CONFIG_OLLAMA_URL, default=DEFAULT_OLLAMA_URL, title="Ollama URL"),
 )]
 pub struct OllamaListLocalModelsAgent {
     data: AgentData,
@@ -52,7 +48,7 @@ impl AsAgent for OllamaListLocalModelsAgent {
         _port: String,
         _value: AgentValue,
     ) -> Result<(), AgentError> {
-        let client = self.manager.get_client(self.ma(), Self::DEF_NAME)?;
+        let client = self.manager.get_client(self.ma())?;
         let model_list = client
             .list_local_models()
             .await
@@ -71,7 +67,6 @@ impl AsAgent for OllamaListLocalModelsAgent {
     category=CATEGORY,
     inputs=[PORT_MODEL_NAME],
     outputs=[PORT_MODEL_INFO],
-    string_global_config(name=CONFIG_OLLAMA_URL, default=DEFAULT_OLLAMA_URL, title="Ollama URL"),
 )]
 pub struct OllamaShowModelInfoAgent {
     data: AgentData,
@@ -98,7 +93,7 @@ impl AsAgent for OllamaShowModelInfoAgent {
             return Ok(());
         }
 
-        let client = self.manager.get_client(self.ma(), Self::DEF_NAME)?;
+        let client = self.manager.get_client(self.ma())?;
         let model_info = client
             .show_model_info(model_name.to_string())
             .await
