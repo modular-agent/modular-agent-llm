@@ -292,7 +292,7 @@ pub fn messages_to_response_input(
         let role_str = match msg.role.as_str() {
             "user" => "user",
             "assistant" => "assistant",
-            "system" => "system",
+            "system" | "developer" => "developer",
             "tool" => "tool",
             _ => "user",
         };
